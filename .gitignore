@@ -1,0 +1,27 @@
+# Android/Gradle
+.gradle/
+.idea/
+.vscode/
+build/
+local.properties
+*.iml
+*.apk
+*.ap_
+*.dex
+
+# C/C++ build artifacts
+*.o
+*.a
+*.so
+*.out
+*.log
+
+# Binary output
+mouseemu
+xoid_mouseemu*
+
+# Backup / temp
+*~
+*.swp
+*.bak
+*.tmp
