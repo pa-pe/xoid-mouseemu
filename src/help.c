@@ -1,20 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "config.h"
 #include "help.h"
 
 const char *get_main_usage(void) {
-    return
-            "Usage:\n"
-            "  mouseemu <command> [options]\n\n"
-            "Main commands:\n"
-            "  start             Start the daemon\n"
-            "  stop              Stop the daemon\n"
-            "  status            Show daemon status\n"
-            "  help              Show this help message\n\n"
-            "Options:\n"
-            "  --workdir=DIR     Set working directory (used for PID, socket, logs)\n"
-            "  --log FILE        Set log file (only used with 'start')\n\n";
+    static char usage[512];
+    snprintf(usage, sizeof(usage),
+             "Usage:\n"
+             "  mouseemu <command> [options]\n\n"
+             "Main commands:\n"
+             "  start             Start the daemon\n"
+             "  stop              Stop the daemon\n"
+             "  status            Show daemon status\n"
+             "  help              Show this help message\n\n"
+             "Options:\n"
+             "  --workdir=DIR     Set working directory (default: %s)\n"
+             "  --log FILE        Set log file (default: %s, only used with 'start')\n\n",
+             DEFAULT_WORKDIR,
+             DEFAULT_LOGFILE);
+    return usage;
 }
 
 const char *get_socket_usage(void) {
