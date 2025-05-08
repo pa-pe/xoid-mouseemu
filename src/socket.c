@@ -10,17 +10,40 @@
 #include "daemon.h"
 #include "virtual.h"
 #include "log.h"
+#include <sys/time.h>
 
 static char sock_path[256] = {0};
 static int server_fd = -1;
+static struct timeval last_command_time = {0};
+#define COMMAND_INTERVAL_US 50000  // 50 мс
+
+void throttle_commands(void) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    // first run
+    if (last_command_time.tv_sec == 0 && last_command_time.tv_usec == 0) {
+        last_command_time = now;
+        return;
+    }
+
+    long elapsed_us = (now.tv_sec - last_command_time.tv_sec) * 1000000L +
+                      (now.tv_usec - last_command_time.tv_usec);
+
+    if (elapsed_us < COMMAND_INTERVAL_US)
+        usleep(COMMAND_INTERVAL_US - elapsed_us);
+
+    gettimeofday(&last_command_time, NULL);
+}
 
 int handle_command(int client_fd, const char *command) {
     log_msg("Received command: %s", command);
+    throttle_commands();  // Обеспечить интервал между командами что бы драйвер успел обработать предыдущую команду
+
     if (strncmp(command, "move ", 5) == 0) {
         int x, y;
         if (sscanf(command + 5, "%d %d", &x, &y) == 2) {
             if (move_mouse_relative(x, y) == 0)
-//                log_msg("Responding: %s", сообщение);
                 dprintf(client_fd, "OK: moved by %d %d\n", x, y);
             else
                 dprintf(client_fd, "ERROR: move failed\n");
@@ -100,8 +123,6 @@ int socket_listener_loop(int (*handler)(int, const char *)) {
         while (fgets(buffer, sizeof(buffer), client_fp)) {
             buffer[strcspn(buffer, "\r\n")] = 0;  // Удаляем \n или \r\n
             if (strlen(buffer) == 0) continue;
-//            handle_command(client, buffer);
-//            fflush(client_fp);
             int should_close = handle_command(client, buffer);
             fflush(client_fp);
             if (should_close) break;  // <-- выйти из цикла и закрыть соединение по велению handle_command

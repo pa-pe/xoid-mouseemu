@@ -25,16 +25,16 @@ int init_virtual_device(void) {
     ioctl(uinput_fd, UI_SET_RELBIT, REL_Y);
     ioctl(uinput_fd, UI_SET_RELBIT, REL_WHEEL);
 
-    ioctl(uinput_fd, UI_SET_EVBIT, EV_ABS);
-    ioctl(uinput_fd, UI_SET_ABSBIT, ABS_X);
-    ioctl(uinput_fd, UI_SET_ABSBIT, ABS_Y);
+//    ioctl(uinput_fd, UI_SET_EVBIT, EV_ABS);
+//    ioctl(uinput_fd, UI_SET_ABSBIT, ABS_X);
+//    ioctl(uinput_fd, UI_SET_ABSBIT, ABS_Y);
 
     ioctl(uinput_fd, UI_SET_EVBIT, EV_KEY);
     ioctl(uinput_fd, UI_SET_KEYBIT, BTN_LEFT);
     ioctl(uinput_fd, UI_SET_KEYBIT, BTN_RIGHT);
 
     ioctl(uinput_fd, UI_SET_PROPBIT, INPUT_PROP_POINTER);
-    ioctl(uinput_fd, UI_SET_PROPBIT, INPUT_PROP_DIRECT);  // Для тачпадов/тачскринов
+//    ioctl(uinput_fd, UI_SET_PROPBIT, INPUT_PROP_DIRECT);  // Для тачпадов/тачскринов
 
     memset(&uidev, 0, sizeof(uidev));
     snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, DEVICE_NAME);
@@ -43,10 +43,10 @@ int init_virtual_device(void) {
     uidev.id.product = 0x5678;
     uidev.id.version = 1;
 
-    uidev.absmin[ABS_X] = 0;
-    uidev.absmax[ABS_X] = 1920;
-    uidev.absmin[ABS_Y] = 0;
-    uidev.absmax[ABS_Y] = 1080;
+//    uidev.absmin[ABS_X] = 0;
+//    uidev.absmax[ABS_X] = 1920;
+//    uidev.absmin[ABS_Y] = 0;
+//    uidev.absmax[ABS_Y] = 1080;
 
     write(uinput_fd, &uidev, sizeof(uidev));
     ioctl(uinput_fd, UI_DEV_CREATE);
