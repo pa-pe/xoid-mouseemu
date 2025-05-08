@@ -9,6 +9,7 @@
 #include "mouse.h"
 #include "daemon.h"
 #include "virtual.h"
+#include "help.h"
 #include "log.h"
 #include <sys/time.h>
 
@@ -50,16 +51,16 @@ int handle_command(int client_fd, const char *command) {
         } else {
             dprintf(client_fd, "ERROR: invalid move command\n");
         }
-    } else if (strncmp(command, "amove ", 6) == 0) {
-        int x, y;
-        if (sscanf(command + 6, "%d %d", &x, &y) == 2) {
-            if (move_mouse_absolute(x, y) == 0)
-                dprintf(client_fd, "OK: moved to %d %d\n", x, y);
-            else
-                dprintf(client_fd, "ERROR: amove failed\n");
-        } else {
-            dprintf(client_fd, "ERROR: invalid amove command\n");
-        }
+//    } else if (strncmp(command, "amove ", 6) == 0) {
+//        int x, y;
+//        if (sscanf(command + 6, "%d %d", &x, &y) == 2) {
+//            if (move_mouse_absolute(x, y) == 0)
+//                dprintf(client_fd, "OK: moved to %d %d\n", x, y);
+//            else
+//                dprintf(client_fd, "ERROR: amove failed\n");
+//        } else {
+//            dprintf(client_fd, "ERROR: invalid amove command\n");
+//        }
     } else if (strncmp(command, "click", 5) == 0) {
         if (click_mouse() == 0)
             dprintf(client_fd, "OK: click sent\n");
@@ -84,12 +85,14 @@ int handle_command(int client_fd, const char *command) {
                 sock_path,
                 get_log_path());
         return 1;  // <--- Сигнал закрыть соединение что бы клиент не остался в ожидании продолжения
+    } else if (strncmp(command, "help", 4) == 0) {
+        dprintf(client_fd, "%s", get_socket_usage());
     } else {
         dprintf(client_fd, "ERROR: unknown command\n");
+        dprintf(client_fd, "%s", get_socket_usage());
     }
     return 0;
 }
-
 
 int socket_listener_loop(int (*handler)(int, const char *)) {
     get_socket_path(sock_path, sizeof(sock_path));
@@ -210,7 +213,7 @@ int request_status(void) {
         return 1;
     }
 
-// Проверка сокета
+    // Проверка сокета
     get_socket_path(sock_path, sizeof(sock_path));
     if (access(sock_path, F_OK) != 0) {
         printf("Socket not found: %s\n", sock_path);

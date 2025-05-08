@@ -10,7 +10,7 @@ LDFLAGS := -pie -Wl,-z,nocopyreloc
 //CFLAGS := --target=armv7a-linux-androideabi33 -fPIE -pie -DANDROID -Wall -Wextra
 //LDFLAGS := -llog
 
-SRC := main.c daemon.c socket.c utils.c virtual.c mouse.c log.c
+SRC := main.c daemon.c socket.c utils.c virtual.c mouse.c log.c help.c
 
 OBJ := $(SRC:.c=.o)
 OUT := xoid_mouseemu

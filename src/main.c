@@ -6,6 +6,7 @@
 #include "daemon.h"
 #include "utils.h"
 #include "log.h"
+#include "help.h"
 
 int main(int argc, char *argv[]) {
     const char *cmd = NULL;
@@ -20,6 +21,11 @@ int main(int argc, char *argv[]) {
         } else if (!cmd) {
             cmd = argv[i];
         }
+    }
+
+    if (!cmd) {
+        fprintf(stderr, "%s", get_full_usage());
+        return 1;
     }
 
     set_workdir(workdir);
@@ -37,30 +43,14 @@ int main(int argc, char *argv[]) {
         return print_status();
     }
 
-//    if (strcmp(cmd, "move") == 0
-//        || strcmp(cmd, "click") == 0
-//        || strcmp(cmd, "scroll") == 0
-//            ) {
-//
-//        char command[MAX_CMD_LEN] = {0};
-//        for (int i = 1; i < argc; i++) {
-//            if (strncmp(argv[i], "--", 2) != 0) {
-//                strcat(command, argv[i]);
-//                if (i < argc - 1) strcat(command, " ");
-//            }
-//        }
+    if (strcmp(cmd, "help") == 0) {
+        fprintf(stderr, "%s", get_full_usage());
+        return 0;
+    }
 
-//        if (handle_command(command) == 0) {
-//            printf("Command sent: %s\n", command);
-//        } else {
-//            fprintf(stderr, "Failed to send command: %s\n", command);
-//            return 1;
-//        }
-//
-//        return 0;
-//    }
-
+//    if (!cmd)
     fprintf(stderr, "Unknown command: %s\n", cmd);
+    fprintf(stderr, "%s", get_full_usage());
 
     log_close();
     return 1;
