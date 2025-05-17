@@ -4,6 +4,7 @@
 #include <string.h>
 #include <linux/uinput.h>
 #include <sys/ioctl.h>
+#include <dirent.h>
 #include "config.h"
 #include "virtual.h"
 
@@ -14,8 +15,46 @@ const char* get_virtual_device_path() {
     return device_path;
 }
 
+static int list_event_devices(char devices[][256], int max) {
+    int count = 0;
+    struct dirent *entry;
+    DIR *dir = opendir("/dev/input");
+    if (!dir) return 0;
+
+    while ((entry = readdir(dir)) != NULL && count < max) {
+        if (strncmp(entry->d_name, "event", 5) == 0) {
+            snprintf(devices[count++], 256, "/dev/input/%s", entry->d_name);
+        }
+    }
+    closedir(dir);
+    return count;
+}
+
+static void find_new_event_device(const char before[][256], int before_count) {
+    char after[64][256];
+    int after_count = list_event_devices(after, 64);
+
+    for (int i = 0; i < after_count; i++) {
+        int found = 0;
+        for (int j = 0; j < before_count; j++) {
+            if (strcmp(after[i], before[j]) == 0) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            strncpy(device_path, after[i], sizeof(device_path));
+            return;
+        }
+    }
+    snprintf(device_path, sizeof(device_path), "(virtual device created, path unknown)");
+}
+
 int init_virtual_device(void) {
     struct uinput_user_dev uidev;
+
+    char before[64][256];
+    int before_count = list_event_devices(before, 64);
 
     uinput_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
     if (uinput_fd < 0) return -1;
@@ -51,7 +90,9 @@ int init_virtual_device(void) {
     write(uinput_fd, &uidev, sizeof(uidev));
     ioctl(uinput_fd, UI_DEV_CREATE);
 
-    snprintf(device_path, sizeof(device_path), "(virtual device created, path unknown)");
+    sleep(1); // небольшая задержка, чтобы /dev/input/eventX появился
+    find_new_event_device(before, before_count);
+
     return uinput_fd;
 }
 
