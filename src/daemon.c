@@ -84,7 +84,7 @@ int run_daemon(void) {
     }
     if (pid > 0) {
         fflush(stdout); // гарантируем вывод до завершения родителя
-        printf("%s started with PID %d\n", APP_NAME, pid);
+        printf("%s v%s started with PID %d\n", APP_NAME, VERSION, pid);
         print_status();
         return 0;
     }
@@ -92,6 +92,14 @@ int run_daemon(void) {
     setsid();
     umask(0);
     chdir("/");
+
+    // Закрываем стандартные потоки для корректного отделения демона при запуске через adb
+    fclose(stdin);
+    fclose(stdout);
+    fclose(stderr);
+    freopen("/dev/null", "r", stdin);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
 
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
