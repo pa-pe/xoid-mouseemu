@@ -78,11 +78,12 @@ int handle_command(int client_fd, const char *command) {
         }
     } else if (strncmp(command, "status", 6) == 0) {
         dprintf(client_fd,
-                "%s v%s\nPID: %d\nSocket: %s\nLog: %s\n",
+                "%s v%s\nPID: %d\nSocket: %s\nDevice: %s\nLog: %s\n",
                 APP_NAME,
                 VERSION,
                 getpid(),
                 sock_path,
+                get_virtual_device_path(),
                 get_log_path());
         return 1;  // <--- Сигнал закрыть соединение что бы клиент не остался в ожидании продолжения
     } else if (strncmp(command, "help", 4) == 0) {
