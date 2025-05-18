@@ -59,6 +59,23 @@ static void on_signal(int sig) {
     exit(EXIT_SUCCESS);
 }
 
+static void on_crash(int sig) {
+    char path[PATH_MAX];
+    snprintf(path, sizeof(path), "%s/crash", get_workdir());
+
+    int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if (fd >= 0) {
+        dprintf(fd, "crashed with signal %d\n", sig);
+        close(fd);
+    }
+
+    cleanup_virtual_device();
+    cleanup_socket_server();
+    remove_pid_file();
+    _exit(EXIT_FAILURE); // bypass stdio flush or atexit handlers
+}
+
+
 static int is_already_running(void) {
     int pid = read_pid_file();
     if (pid <= 0) return 0;
@@ -103,6 +120,12 @@ int run_daemon(void) {
 
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
+
+    signal(SIGSEGV, on_crash);
+    signal(SIGABRT, on_crash);
+    signal(SIGBUS,  on_crash);
+    signal(SIGFPE,  on_crash);
+    signal(SIGILL,  on_crash);
 
     int dev_fd = init_virtual_device();
     if (dev_fd < 0) {
